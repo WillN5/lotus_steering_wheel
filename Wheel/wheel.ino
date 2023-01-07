@@ -59,7 +59,7 @@ void setup() {
     // Initialise RF24 module
     radio.begin();
     radio.setPALevel(RF24_PA_MIN);
-    radio.setRetries(15,5);          // 15x250us + 250us wait for ACK, 5 retries
+    // radio.setRetries(15,5);          // 15x250us + 250us wait for ACK, 5 retries
     radio.setChannel(111);           // 2400 MHz + 111(s) ;) = 2511 MHz;
     radio.openWritingPipe(address);
     radio.stopListening();

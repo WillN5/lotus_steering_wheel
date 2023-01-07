@@ -47,6 +47,9 @@ volatile unsigned long timeout_timer = 0;
 #define BIT_SPD2    0b10000000
 
 void setup() {
+
+    // Serial for Debug
+    Serial.begin(9600);
   
     // Initialise RF24 module
     radio.begin();
@@ -74,6 +77,8 @@ void setup() {
     digitalWrite(OUTPUT_SPD1,LOW);
     digitalWrite(OUTPUT_SPD2,LOW);
 
+    Serial.println("Startup...");
+
 }
 
 void loop() {
@@ -81,6 +86,7 @@ void loop() {
   if(radio.available()){
     radio.read(&payload,sizeof(payload));
     timeout_timer = millis();
+    Serial.println(payload);
   }
 
   if(millis() - timeout_timer > 2500){
@@ -93,6 +99,7 @@ void loop() {
     digitalWrite(OUTPUT_INT,LOW);
     digitalWrite(OUTPUT_SPD1,LOW);
     digitalWrite(OUTPUT_SPD2,LOW);
+    Serial.println("Timeout")
   }
 
   if(payload & BIT_RIGHT){
