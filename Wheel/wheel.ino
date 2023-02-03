@@ -101,6 +101,7 @@ void loop() {
     unsigned long timer_left = 0;
 
     while(1){
+      //test
 
       // Right Indicator
       state_right = !digitalRead(INPUT_RIGHT); // read state of button
