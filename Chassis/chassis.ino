@@ -98,7 +98,7 @@ void loop() {
     digitalWrite(OUTPUT_WASH,LOW);
     digitalWrite(OUTPUT_SPD1,LOW);
     digitalWrite(OUTPUT_SPD2,LOW);
-    Serial.println("Timeout")
+    Serial.println("Timeout");
   }
 
   if(payload & BIT_RIGHT){
