@@ -11,14 +11,14 @@
 #include <RF24.h>
 
 // Control Outputs
-#define OUTPUT_RIGHT  A4
-#define OUTPUT_LEFT   A5
-#define OUTPUT_BEAM   5
-#define OUTPUT_HORN   6
-#define OUTPUT_WASH   A3
-#define OUTPUT_INT    A2
-#define OUTPUT_SPD1   7
-#define OUTPUT_SPD2   8
+#define OUTPUT_RIGHT      A4
+#define OUTPUT_LEFT       A5
+#define OUTPUT_BEAM       5
+#define OUTPUT_HORN       6
+#define OUTPUT_WASH       A3
+#define OUTPUT_SPD1       A2
+#define OUTPUT_OBSOLETE   7
+#define OUTPUT_SPD2       8
 
 // RF24 Pins
 #define MISO  11
@@ -37,14 +37,14 @@ volatile byte payload = 0;
 volatile unsigned long timeout_timer = 0;
 
 // Button Encoding
-#define BIT_RIGHT   0b00000001
-#define BIT_LEFT    0b00000010
-#define BIT_BEAM    0b00000100
-#define BIT_HORN    0b00001000
-#define BIT_WASH    0b00010000
-#define BIT_INT     0b00100000
-#define BIT_SPD1    0b01000000
-#define BIT_SPD2    0b10000000
+#define BIT_RIGHT     0b00000001    // Right indicator
+#define BIT_LEFT      0b00000010    // Left indicator
+#define BIT_BEAM      0b00000100    // Full beam
+#define BIT_HORN      0b00001000    // Horn
+#define BIT_WASH      0b00010000    // Wiper Washer
+#define BIT_SPD1      0b00100000    // Slow Speed Wipers
+#define BIT_OBSOLETE  0b01000000    // Unused
+#define BIT_SPD2      0b10000000    // Fast Speed Wipers
 
 void setup() {
 
@@ -64,18 +64,18 @@ void setup() {
     pinMode(OUTPUT_BEAM,OUTPUT);
     pinMode(OUTPUT_HORN,OUTPUT);
     pinMode(OUTPUT_WASH,OUTPUT);
-    pinMode(OUTPUT_INT,OUTPUT);
     pinMode(OUTPUT_SPD1,OUTPUT);
     pinMode(OUTPUT_SPD2,OUTPUT);
+    pinMode(OUTPUT_OBSOLETE,OUTPUT);
     
     digitalWrite(OUTPUT_RIGHT,LOW);
     digitalWrite(OUTPUT_LEFT,LOW);
     digitalWrite(OUTPUT_BEAM,LOW);
     digitalWrite(OUTPUT_HORN,LOW);
     digitalWrite(OUTPUT_WASH,LOW);
-    digitalWrite(OUTPUT_INT,LOW);
     digitalWrite(OUTPUT_SPD1,LOW);
     digitalWrite(OUTPUT_SPD2,LOW);
+    digitalWrite(OUTPUT_OBSOLETE,LOW);
 
     Serial.println("Startup...");
 
@@ -94,9 +94,8 @@ void loop() {
     digitalWrite(OUTPUT_RIGHT,LOW);
     digitalWrite(OUTPUT_LEFT,LOW);
     digitalWrite(OUTPUT_BEAM,LOW);
-//    digitalWrite(OUTPUT_HORN,LOW);
+    digitalWrite(OUTPUT_HORN,LOW);
     digitalWrite(OUTPUT_WASH,LOW);
-    digitalWrite(OUTPUT_INT,LOW);
     digitalWrite(OUTPUT_SPD1,LOW);
     digitalWrite(OUTPUT_SPD2,LOW);
     Serial.println("Timeout")
@@ -120,11 +119,11 @@ void loop() {
     digitalWrite(OUTPUT_BEAM,LOW);
   }
 
-//  if(payload & BIT_HORN){
-//    digitalWrite(OUTPUT_HORN,HIGH);
-//  }else{
-//    digitalWrite(OUTPUT_HORN,LOW);
-//  }
+ if(payload & BIT_HORN){
+   digitalWrite(OUTPUT_HORN,HIGH);
+ }else{
+   digitalWrite(OUTPUT_HORN,LOW);
+ }
   
   if(payload & BIT_WASH){
     digitalWrite(OUTPUT_WASH,HIGH);
@@ -132,25 +131,18 @@ void loop() {
     digitalWrite(OUTPUT_WASH,LOW);
   }
   
-  if(payload & BIT_INT){
-    digitalWrite(OUTPUT_INT,HIGH);
-  }else{
-    digitalWrite(OUTPUT_INT,LOW);
-  }
-  
   if(payload & BIT_SPD1){
-    digitalWrite(OUTPUT_SPD2,HIGH); // don't use speed 1 output
+    digitalWrite(OUTPUT_SPD1,HIGH);
   }else{
-    digitalWrite(OUTPUT_SPD2,LOW);
+    digitalWrite(OUTPUT_SPD1,LOW);
   }
   
   if(payload & BIT_SPD2){
-//    digitalWrite(OUTPUT_SPD2,HIGH);
+    digitalWrite(OUTPUT_SPD2,HIGH);
   }else{
-//    digitalWrite(OUTPUT_SPD2,LOW);
+    digitalWrite(OUTPUT_SPD2,LOW);
   }
 
-  delay(50);
-
+  delay(20);
 
 }

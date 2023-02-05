@@ -11,14 +11,14 @@
 #include <RF24.h>
 
 // Button Inputs
-#define INPUT_RIGHT A4
-#define INPUT_LEFT  6
-#define INPUT_BEAM  A2
-#define INPUT_HORN  A1
-#define INPUT_WASH  7
-#define INPUT_INT   A0
-#define INPUT_SPD1  9
-#define INPUT_SPD2  8
+#define INPUT_RIGHT     A4
+#define INPUT_LEFT      6
+#define INPUT_BEAM      A2
+#define INPUT_HORN      A1
+#define INPUT_WASH      7
+#define INPUT_SPD1      A0 // Slow Speed - Position 1
+#define INPUT_SPD2      9  // Fast Speed - Position 2
+#define INPUT_OBSOLETE  8  // Unused     - Position 3
 
 // LED Outputs
 #define LED_RIGHT     A5  
@@ -43,14 +43,14 @@ volatile byte payload_transmit = 0b00000000;  // byte to be transmitted that enc
 volatile int counter = 0;
 
 // Button Encoding
-#define BIT_RIGHT   0b00000001
-#define BIT_LEFT    0b00000010
-#define BIT_BEAM    0b00000100
-#define BIT_HORN    0b00001000
-#define BIT_WASH    0b00010000
-#define BIT_INT     0b00100000
-#define BIT_SPD1    0b01000000
-#define BIT_SPD2    0b10000000
+#define BIT_RIGHT     0b00000001    // Right indicator
+#define BIT_LEFT      0b00000010    // Left indicator
+#define BIT_BEAM      0b00000100    // Full beam
+#define BIT_HORN      0b00001000    // Horn
+#define BIT_WASH      0b00010000    // Wiper Washer
+#define BIT_SPD1      0b00100000    // Slow Speed Wipers
+#define BIT_OBSOLETE  0b01000000    // Unused
+#define BIT_SPD2      0b10000000    // Fast Speed Wipers
 
 void setup() {
 
@@ -70,9 +70,9 @@ void setup() {
     pinMode(INPUT_BEAM,INPUT_PULLUP);
     pinMode(INPUT_HORN,INPUT_PULLUP);
     pinMode(INPUT_WASH,INPUT_PULLUP);
-    pinMode(INPUT_INT,INPUT_PULLUP);
     pinMode(INPUT_SPD1,INPUT_PULLUP);
     pinMode(INPUT_SPD2,INPUT_PULLUP);
+    pinMode(INPUT_OBSOLETE,INPUT_PULLUP);
     
     // Initialise Outputs
     pinMode(LED_RIGHT,OUTPUT);
@@ -106,16 +106,15 @@ void loop() {
       // Right Indicator
       state_right = !digitalRead(INPUT_RIGHT); // read state of button
       if(state_right && !state_old_right){ // if button pressed, and previously wasn't pressed, do something
-          // if indicator already on - switch off
-          if(payload_transmit & BIT_RIGHT){
+          // if left indicator on, switch off
+          if(payload_transmit & BIT_LEFT){
+              payload_transmit = payload_transmit & ~(BIT_LEFT);
+          // else if right indicator already on - switch off
+          }else if(payload_transmit & BIT_RIGHT){
               payload_transmit = payload_transmit &~(BIT_RIGHT);
-          // else indicator is already off, so switch on
+          // else both indicators are already off, so switch on
           }else{
                 payload_transmit = payload_transmit | BIT_RIGHT;
-              // if other indicator is on, switch off
-              if(payload_transmit & BIT_LEFT){
-                  payload_transmit = payload_transmit & ~(BIT_LEFT);
-              }
           }
           state_old_right = 1;
       }else if(!state_right){ // if button not pressed, update state_old
@@ -125,16 +124,15 @@ void loop() {
       // Left Indicator (copy of Right Indicator but swap left/right)
       state_left = !digitalRead(INPUT_LEFT);
       if(state_left && !state_old_left){ // if new button press - toggle on/off value
-          // if indicator already on - switch off
-          if(payload_transmit & BIT_LEFT){
+          // if right indicator already on - switch off
+          if(payload_transmit & BIT_RIGHT){
+              payload_transmit = payload_transmit & ~(BIT_RIGHT);
+          // else if left indicator already on - switch off
+          }else if(payload_transmit & BIT_LEFT){
               payload_transmit = payload_transmit & ~(BIT_LEFT);
-          // else indicator is off, switch on
+          // else both indicators are off, switch on
           }else{
               payload_transmit = payload_transmit | BIT_LEFT;
-              // if other indicator is on, switch off
-              if(payload_transmit & BIT_RIGHT){
-                  payload_transmit = payload_transmit & ~(BIT_RIGHT);
-              }
           }
           state_old_left = 1;
       }else if(!state_left){
@@ -181,26 +179,26 @@ void loop() {
         payload_transmit = payload_transmit & ~(BIT_WASH);
       }
 
-      // Intermittent Wipers - Momentary (held by rotary switch)
-      if(!digitalRead(INPUT_INT)){
-        payload_transmit = payload_transmit | BIT_INT;
-      }else{
-        payload_transmit = payload_transmit & ~(BIT_INT);
-      }
-
-      // Wipers Speed 1 - Momentary (held by rotary switch)
+      // Wiper Speed 1 (Slow)
       if(!digitalRead(INPUT_SPD1)){
         payload_transmit = payload_transmit | BIT_SPD1;
       }else{
         payload_transmit = payload_transmit & ~(BIT_SPD1);
       }
-
-      // Wipers Speed 2 - Momentary (held by rotary switch)
+       
+      // Wiper Speed 2 (Fast)
       if(!digitalRead(INPUT_SPD2)){
         payload_transmit = payload_transmit | BIT_SPD2;
       }else{
         payload_transmit = payload_transmit & ~(BIT_SPD2);
       }
+
+      // Wipers Speed OBSOLETE - Momentary (held by rotary switch)
+      // if(!digitalRead(INPUT_OBSOLETE)){
+        // payload_transmit = payload_transmit | BIT_OBSOLETE;
+      // }else{
+        // payload_transmit = payload_transmit & ~(BIT_OBSOLETE);
+      // }
 
       // Right Indicator LED
       if((payload_transmit & BIT_RIGHT)  && (millis() - timer_right > IND_INTERVAL)){
